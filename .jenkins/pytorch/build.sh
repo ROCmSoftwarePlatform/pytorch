@@ -168,7 +168,7 @@ if [[ "$BUILD_ENVIRONMENT" == *rocm* ]]; then
   fi
 
   python tools/amd_build/build_amd.py
-  python setup.py install --user
+  python setup.py install
 
   exit 0
 fi
