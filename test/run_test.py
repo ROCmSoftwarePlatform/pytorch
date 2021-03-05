@@ -397,9 +397,9 @@ def calculate_job_times(reports: List[Dict[str, Any]]) -> Dict[str, Tuple[float,
 
 
 def calculate_shards(num_shards: int, tests: List[str], job_times: Dict[str, Tuple[float, int]]) -> List[Tuple[float, List[str]]]:
-    # if there's 'test_cpp_extensions_aot' entry in job_times, add 'test_cpp_extensions_aot_ninja' 
-    # and 'test_cpp_extensions_aot_no_ninja' duplicate entries to ease future computation since 
-    # test_cpp_extensions_aot_no_ninja and test_cpp_extensions_aot_ninja are Python test jobs that 
+    # if there's 'test_cpp_extensions_aot' entry in job_times, add 'test_cpp_extensions_aot_ninja'
+    # and 'test_cpp_extensions_aot_no_ninja' duplicate entries to ease future computation since
+    # test_cpp_extensions_aot_no_ninja and test_cpp_extensions_aot_ninja are Python test jobs that
     # both use the test_cpp_extensions_aot.py file.
     if 'test_cpp_extensions_aot' in job_times:
         job_times['test_cpp_extensions_aot_ninja'] = job_times['test_cpp_extensions_aot']
@@ -457,7 +457,17 @@ def run_test(test_module, test_directory, options, launcher_cmd=None, extra_unit
     if options.verbose:
         unittest_args.append(f'-{"v"*options.verbose}')  # in case of pytest
     if test_module in RUN_PARALLEL_BLOCKLIST:
-        unittest_args = [arg for arg in unittest_args if not arg.startswith('--run-parallel')]
+        # we must remove '--run-parallel' plus the next arg if it is an int
+        new_args = []
+        skip_i = -1
+        for i,arg in enumerate(unittest_args):
+            if arg.startswith('--run-parallel'):
+                skip_i = i+1
+            elif i == skip_i and arg.isnumeric():
+                pass
+            else:
+                new_args.append(arg)
+        unittest_args = new_args
     if extra_unittest_args:
         assert isinstance(extra_unittest_args, list)
         unittest_args.extend(extra_unittest_args)
