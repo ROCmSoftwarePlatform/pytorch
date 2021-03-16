@@ -450,7 +450,6 @@ std::tuple<Tensor, Tensor, Tensor, Tensor, int64_t> _batch_norm_impl_index(
                  || (!running_mean.defined() && !running_var.defined() && training))
                && detail::getCUDAHooks().compiledWithMIOpen()
                && cudnn_enabled
-               && (!(input.dim() > 3) || !((input.size(2) * input.size(3)) & 3))
                );
 
   if (use_miopen) {
